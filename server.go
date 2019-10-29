@@ -18,14 +18,22 @@ type PlayerServer struct {
 
 // ServeHTTP implements handler interface, serves http
 func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	player := r.URL.Path[len("/players/"):]
+	router := http.NewServeMux()
+	router.Handle("/league", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
 
-	switch r.Method {
-	case http.MethodPost:
-		p.processWin(w, player)
-	case http.MethodGet:
-		p.showScore(w, player)
-	}
+	router.Handle("/players/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		player := r.URL.Path[len("/players/"):]
+
+		switch r.Method {
+		case http.MethodPost:
+			p.processWin(w, player)
+		case http.MethodGet:
+			p.showScore(w, player)
+		}
+	}))
+	router.ServeHTTP(w, r)
 }
 
 func (p *PlayerServer) showScore(w http.ResponseWriter, player string) {
